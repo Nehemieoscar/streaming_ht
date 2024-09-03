@@ -1,0 +1,115 @@
+-- Créer la base de données
+CREATE DATABASE IF NOT EXISTS streaming_db;
+USE streaming_db;
+
+-- Table pour les utilisateurs
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(50) NOT NULL UNIQUE,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL,
+    role ENUM('user', 'admin') DEFAULT 'user',
+    date_creation TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    last_login TIMESTAMP NULL,
+    is_active BOOLEAN DEFAULT TRUE
+);
+
+-- Table pour les détails du profil utilisateur
+CREATE TABLE IF NOT EXISTS user_profiles (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    first_name VARCHAR(50),
+    last_name VARCHAR(50),
+    birthdate DATE,
+    profile_picture VARCHAR(255),
+    preferences JSON,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table pour les actions des utilisateurs
+CREATE TABLE IF NOT EXISTS user_actions (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT NOT NULL,
+    action VARCHAR(50) NOT NULL,
+    target_id INT NULL,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table pour les logs des administrateurs
+CREATE TABLE IF NOT EXISTS admin_logs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    admin_id INT NOT NULL,
+    action VARCHAR(100) NOT NULL,
+    details TEXT,
+    timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (admin_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
+-- Table pour les catégories
+CREATE TABLE IF NOT EXISTS categories (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- Table pour le contenu (films, séries, TV shows, podcasts, etc.)
+CREATE TABLE IF NOT EXISTS content (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    titre VARCHAR(255) NOT NULL,
+    description TEXT,
+    type ENUM('film', 'serie', 'tvshow', 'podcast') NOT NULL,
+    duree INT DEFAULT NULL,
+    date_sortie DATE,
+    categorie_id INT,
+    thumbnail_path VARCHAR(255),
+    preview_path VARCHAR(255),
+    background_path VARCHAR(255),
+    FOREIGN KEY (categorie_id) REFERENCES categories(id)
+);
+
+-- Table pour les détails des séries
+CREATE TABLE IF NOT EXISTS series_details (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    content_id INT NOT NULL,
+    nb_saisons INT DEFAULT 0,
+    nb_episodes INT DEFAULT 0,
+    FOREIGN KEY (content_id) REFERENCES content(id) ON DELETE CASCADE
+);
+
+-- Table pour les saisons des séries
+CREATE TABLE IF NOT EXISTS saisons (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    series_id INT NOT NULL,
+    numero_saison INT NOT NULL,
+    titre_saison VARCHAR(255) DEFAULT NULL,
+    description TEXT DEFAULT NULL,
+    FOREIGN KEY (series_id) REFERENCES series_details(id) ON DELETE CASCADE
+);
+
+-- Table pour les épisodes des séries
+CREATE TABLE IF NOT EXISTS episodes (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    saison_id INT NOT NULL,
+    numero_episode INT NOT NULL,
+    titre_episode VARCHAR(255) NOT NULL,
+    duree INT NOT NULL,
+    video_path VARCHAR(255) NOT NULL,
+    FOREIGN KEY (saison_id) REFERENCES saisons(id) ON DELETE CASCADE
+);
+
+-- Table pour les acteurs
+CREATE TABLE IF NOT EXISTS acteurs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    nom VARCHAR(100) NOT NULL,
+    bio TEXT
+);
+
+-- Table pour l'association des acteurs avec le contenu
+CREATE TABLE IF NOT EXISTS content_acteurs (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    content_id INT NOT NULL,
+    acteur_id INT NOT NULL,
+    role VARCHAR(100) DEFAULT NULL,
+    FOREIGN KEY (content_id) REFERENCES content(id) ON DELETE CASCADE,
+    FOREIGN KEY (acteur_id) REFERENCES acteurs(id) ON DELETE CASCADE
+);

@@ -1,0 +1,5 @@
+
+Filtres et Tri : Ajoutez des options de filtres et de tri pour affiner les résultats de recherche.
+Suggestions et Recommandations : Proposez des films similaires ou recommandés en fonction des recherches précédentes de l’utilisateur.
+
+ une interface admin pour pouvoir faire la gestion de la plateforme (edit , Supprimer, upload etc ) 
